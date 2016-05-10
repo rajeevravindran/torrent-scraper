@@ -18,7 +18,7 @@ elif(data == 'True\n'):
 season=format(6,'02d')
 #print 'Enter episode number'
 #episode=format(input(),'02d')
-episode=format(2,'02d')
+episode=format(3,'02d')
 if(downloaded == False):
     print str(strftime("%Y-%m-%d %H:%M:%S", localtime()))
     search_string='S'+str(season)+'E'+str(episode)
@@ -32,7 +32,8 @@ if(downloaded == False):
     for i in range(1,30):
         print '[] Searching '+str(search_string)+' in '+str(torrent_name[i])
         match = re.search(str(search_string),torrent_name[i])
-        if(match !=None):
+        match2= re.search(r'ettv',torrent_name[i])
+        if ((match !=None) & (match2 != None)):
             if (match.group(0)==search_string):
                 print i
                 print '[] Found at node '+str(i)
@@ -55,9 +56,9 @@ if(downloaded == False):
         link="\""+str(magnet_link[0])+"\""
         payload='{"method": "auth.login", "params": ["9324651015"], "id": 1}'
         r=requests.session()
-        response = r.post("http://192.168.0.104:8112/json", data=payload)
+        response = r.post("http://localhost:8112/json", data=payload)
         payload2=str('{"method": "core.add_torrent_magnet", "params":[')+link+str(', {}], "id": 2}')
-        response2 = r.post("http://192.168.0.104:8112/json", data=payload2)
+        response2 = r.post("http://localhost:8112/json", data=payload2)
         print response.headers
         print response.text
         print "---------"
