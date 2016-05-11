@@ -1,6 +1,7 @@
 import requests
 from lxml import html
 import re
+from time import strftime, localtime
 
 def sendHttpRequest(url):
     print "[] Sending HTTPS request to "+str(url)
@@ -11,6 +12,14 @@ def sendHttpRequest(url):
 
 def parseByXpath(HtmlContent,xpath):
     return HtmlContent.xpath(xpath)
+
+def updateLog(logThis):
+    status_file=open('events.log','a')
+    status_file.write(str(strftime("%Y-%m-%d %H:%M:%S", localtime())))
+    status_file.write(" --> ")
+    status_file.write(logThis)
+    status_file.write("\n")
+    status_file.close()
 
 def searchContent(showDetails,webSiteData):
     if(showDetails['uploader']!=None):
@@ -98,7 +107,9 @@ def searchEpisode(showName,uploader,season,episode):
         searchResult = searchContent(showDetails,websiteData)
         if(searchResult!=None):
             gotEpisode = True
+            updateLog("Found "+searchResult['name'])
         if(page == 5):
+            updateLog("Skipped ")
             return {
                 'name' : 'Not Found',
                 'link' : 'Not Found',
@@ -123,11 +134,14 @@ matchedEpisodes=[]
 
 #print searchEpisode("Modern Family","ettv",7,1)
 
-for i in range(0,21):
-    episode = searchEpisode("Modern Family","",7,i+1)
+season = 1
+episodes = 23
+
+for i in range(0,episodes):
+    episode = searchEpisode("Person of Interest","",season,i+1)
     matchedEpisodes.append(episode)
 
 
-for i in range(0,21):
+for i in range(0,episodes):
     if(str(matchedEpisodes[i]['link']) != 'Not Found'):
         sendJSONtoDeluge(str(matchedEpisodes[i]['link']),"192.168.0.104","8112","9324651015")
