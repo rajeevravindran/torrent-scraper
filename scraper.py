@@ -56,9 +56,9 @@ if(downloaded == False):
         link="\""+str(magnet_link[0])+"\""
         payload='{"method": "auth.login", "params": ["9324651015"], "id": 1}'
         r=requests.session()
-        response = r.post("http://localhost:8112/json", data=payload)
+        response = r.post("http://192.168.0.104:8112/json", data=payload)
         payload2=str('{"method": "core.add_torrent_magnet", "params":[')+link+str(', {}], "id": 2}')
-        response2 = r.post("http://localhost:8112/json", data=payload2)
+        response2 = r.post("http://192.168.0.104:8112/json", data=payload2)
         print response.headers
         print response.text
         print "---------"

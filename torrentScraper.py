@@ -13,61 +13,102 @@ def parseByXpath(HtmlContent,xpath):
     return HtmlContent.xpath(xpath)
 
 def searchContent(showDetails,webSiteData):
+    uploaderMatch = False
+    episodeMatch = False
+    i = 0
+    searchLimit = 30
     season=format(showDetails['season'],'02d')
     episode=format(showDetails['episode'],'02d')
     search_string='S'+str(season)+'E'+str(episode)
     torrent_name = parseByXpath(webSiteData,'//*[@id="searchResult"]/tr/td/div/a/text()')
-    for i in range(0,30):
-        print '['+str(i)+'] Searching '+str(search_string)+' in '+str(torrent_name[i])
+    while(episodeMatch == False):
+        if(i > 29):
+            break;
         match = re.search(str(search_string),torrent_name[i])
         match2= re.search(str(showDetails['uploader']),torrent_name[i])
-        if ((match !=None) & (match2 != None)):
-            if (match.group(0)==search_string):
-                print i
+        episodeUploaderXpath = '//*[@id="searchResult"]/tr['+str(i+1)+']/td[2]/font/a/text()'
+        episodeUploader = parseByXpath(webSiteData,episodeUploaderXpath)[0]
+        if (episodeUploader == showDetails['uploader'] or bool(showDetails['uploader']) == False):
+            uploaderMatch = True
+        else:
+            uploaderMatch = False
+        print '['+str(i)+'] Searching '+str(search_string)+' by '+str(showDetails['uploader'])+' in '+str(torrent_name[i])
+        i = i + 1
+        if ((match !=None)):
+            if (match.group(0)==search_string and uploaderMatch == True):
+                print 'Matched search'
                 print '[] Found at node '+str(i)
-                found=True
+                episodeMatch=True
                 break
-    episodeNode = i + 1
-    episodeNameXpath = '//*[@id="searchResult"]/tr[7]/td[2]/div/a/text()'
-    episodeName = parseByXpath(webSiteData, episodeNameXpath)[0]
-    episodeMagnetXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/a[1]/@href'
-    magnetLink = parseByXpath(webSiteData,episodeMagnetXpath)[0]
-    episodeDetailsXpath =  '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/text()'
-    episodeDetails = parseByXpath(webSiteData,episodeDetailsXpath)[0]
-    episodeSeedsXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[3]/text()'
-    episodeSeeds = parseByXpath(webSiteData,episodeSeedsXpath)[0]
-    episodeLeechXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[4]/text()'
-    episodeLeech = parseByXpath(webSiteData,episodeLeechXpath)[0]
-    episodeDetails = {
-        'name' : episodeName,
-        'link' : magnetLink,
-        'details' : episodeDetails,
-        'seeds' : episodeSeeds,
-        'leech' : episodeLeech
-    }
-    return episodeDetails
+    if(episodeMatch == True):
+        print "[] Found. Parsing Details"
+        episodeNode = i
+        episodeNameXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/div/a/text()'
+        episodeName = parseByXpath(webSiteData, episodeNameXpath)[0]
+        episodeMagnetXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/a[1]/@href'
+        magnetLink = parseByXpath(webSiteData,episodeMagnetXpath)[0]
+        episodeUploaderXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/a/text()'
+        episodeUploader = parseByXpath(webSiteData,episodeUploaderXpath)[0]
+        episodeDetailsXpath =  '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/text()'
+        episodeDetails = parseByXpath(webSiteData,episodeDetailsXpath)[0]+str(episodeUploader)
+        episodeSeedsXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[3]/text()'
+        episodeSeeds = parseByXpath(webSiteData,episodeSeedsXpath)[0]
+        episodeLeechXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[4]/text()'
+        episodeLeech = parseByXpath(webSiteData,episodeLeechXpath)[0]
+        episodeUploaderXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/a/text()'
+        episodeUploader = parseByXpath(webSiteData,episodeUploaderXpath)[0]
+        episodeDetails = {
+            'name' : episodeName,
+            'link' : magnetLink,
+            'details' : episodeDetails,
+            'seeds' : episodeSeeds,
+            'leech' : episodeLeech,
+            'uploader' : episodeUploader
+        }
+    if(episodeMatch == True):
+        return episodeDetails
+    else:
+        return None
   ##  //*[@id="searchResult"]/tbody/tr[6]/td[2]/font/text()
   ##  //*[@id="searchResult"]/tbody/tr[7]/td[2]/div/a
 
 def searchEpisode(showName,uploader,season,episode):
-    print "Generating Request url"
-    name=showName.split()
-    url = 'https://pirateproxy.pe/search/'
-    for i in range(0,len(name)):
-        if(i!=(len(name)-1)):
-            url = url + str(name[i]) + "%20"
-        else:
-            url = url + str(name[i])
-    url = url + "/0/99/0"
-    print url
-    websiteData = sendHttpRequest(url)
-    showDetails = {'name':showName,'season':season,'episode':episode,'uploader':uploader}
-    return searchContent(showDetails,websiteData)
+    gotEpisode = False
+    page = 0
+    while(gotEpisode == False):
+        print "Generating Request url for page "+str(page)
+        name=showName.split()
+        url = 'https://pirateproxy.pe/search/'
+        for i in range(0,len(name)):
+            if(i!=(len(name)-1)):
+                url = url + str(name[i]) + "%20"
+            else:
+                url = url + str(name[i])
+        url = url + "/"+str(page)+"/99/0"
+        print url
+        websiteData = sendHttpRequest(url)
+        page = page + 1
+        showDetails = {'name':showName,'season':season,'episode':episode,'uploader':uploader}
+        searchResult = searchContent(showDetails,websiteData)
+        if(searchResult!=None):
+            gotEpisode = True
+    return searchResult
 
-episode = searchEpisode("Game of Thrones","ettv",6,2)
+def sendJSONtoDeluge(link,serverAddress,port,password):
+    link="\""+str(link)+"\""
+    deluge = requests.session()
+    JSONString ='{"method": "auth.login", "params": ["'+str(password)+'"], "id": 1}'
+    postRequest = "http://"+serverAddress+":"+port+"/json"
+    response = deluge.post(postRequest,data=JSONString)
+    JSONString = str('{"method": "core.add_torrent_magnet", "params":[')+link+str(', {}], "id": 2}')
+    print response.headers
+    response = deluge.post(postRequest,data=JSONString)
+    print response.headers
+matchedEpisodes=[]
 
-print " Name : "+str(episode['name'])
-print " Magnet : "+str(episode['link'])
-print " Details : "+episode['details']
-print " Seeds : "+str(episode['seeds'])
-print " Leeches : "+str(episode['leech'])
+for i in range(0,2):
+    episode = searchEpisode("The Big Bang Theory","ettv",9,i+1)
+    matchedEpisodes.append(episode)
+
+for i in range(0,2):
+    sendJSONtoDeluge(str(matchedEpisodes[i]['link']),"192.168.0.104","8112","9324651015")
