@@ -120,7 +120,7 @@ def searchEpisode(showName,uploader,season,episode):
             }
     return searchResult
 
-def sendJSONtoDeluge(link,serverAddress,port,password):
+def sendJSONtoDeluge(link,name,serverAddress,port,password):
     link="\""+str(link)+"\""
     deluge = requests.session()
     JSONString ='{"method": "auth.login", "params": ["'+str(password)+'"], "id": 1}'
@@ -129,19 +129,17 @@ def sendJSONtoDeluge(link,serverAddress,port,password):
     JSONString = str('{"method": "core.add_torrent_magnet", "params":[')+link+str(', {}], "id": 2}')
     print response.headers
     response = deluge.post(postRequest,data=JSONString)
-    print response.headers
+    updateLog("Downloading "+name+" "+str(response.headers))
 matchedEpisodes=[]
 
 #print searchEpisode("Modern Family","ettv",7,1)
-
-season = 1
-episodes = 23
+name = "Gotham"
+season = 2
+episodes = 20
+uploader = ""
 
 for i in range(0,episodes):
-    episode = searchEpisode("Person of Interest","",season,i+1)
+    episode = searchEpisode(name,uploader,season,i+1)
     matchedEpisodes.append(episode)
-
-
-for i in range(0,episodes):
     if(str(matchedEpisodes[i]['link']) != 'Not Found'):
-        sendJSONtoDeluge(str(matchedEpisodes[i]['link']),"192.168.0.104","8112","9324651015")
+        sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
