@@ -1,7 +1,7 @@
 import requests
 from lxml import html
 import re
-from time import strftime, localtime
+from time import strftime, localtime, gmtime
 
 def sendHttpRequest(url):
     print "[] Sending HTTPS request to "+str(url)
@@ -21,15 +21,19 @@ def updateLog(logThis):
     status_file.write("\n")
     status_file.close()
 
+def generateEpisodeNumber(season,episode):
+    season=format(int(season),'02d')
+    episode=format(int(episode),'02d')
+    generated='S'+str(season)+'E'+str(episode)
+    return generated
+
 def searchContent(showDetails,webSiteData):
     if(showDetails['uploader']!=None):
         uploaderMatch = False
         episodeMatch = False
         i = 0
         searchLimit = 30
-        season=format(showDetails['season'],'02d')
-        episode=format(showDetails['episode'],'02d')
-        search_string='S'+str(season)+'E'+str(episode)
+        search_string=generateEpisodeNumber(showDetails['season'],showDetails['episode'])
         torrent_name = parseByXpath(webSiteData,'//*[@id="searchResult"]/tr/td/div/a/text()')
         while(episodeMatch == False):
             if(i > 29):
@@ -108,8 +112,8 @@ def searchEpisode(showName,uploader,season,episode):
         if(searchResult!=None):
             gotEpisode = True
             updateLog("Found "+searchResult['name'])
-        if(page == 5):
-            updateLog("Skipped ")
+        if(page == 3):
+            updateLog(" Not found within "+str(page)+" pages")
             return {
                 'name' : 'Not Found',
                 'link' : 'Not Found',
@@ -130,16 +134,34 @@ def sendJSONtoDeluge(link,name,serverAddress,port,password):
     print response.headers
     response = deluge.post(postRequest,data=JSONString)
     updateLog("Downloading "+name+" "+str(response.headers))
+
+def checkEpisode(name,season,episode,uploader,frequency):
+    firstTime = True
+    previousTime = 1
+    while True:
+        firstTime = True
+        time = int(strftime("%M",gmtime()))
+        if time%frequency == 0 and firstTime == True and time!=previousTime:
+            firstTime = False
+            previousTime = time
+            updateLog("Checking for "+str(name)+" "+generateEpisodeNumber(season,episode))
+            episodeInfo = searchEpisode(name,uploader,season,episode)
+            if(episodeInfo['link']!='Not Found'):
+                sendJSONtoDeluge(str(episodeInfo['link']),str(episodeInfo['name']),"192.168.0.104","8112","9324651015")
+                break;
+
 matchedEpisodes=[]
 
 #print searchEpisode("Modern Family","ettv",7,1)
-name = "Gotham"
-season = 2
-episodes = 20
-uploader = ""
+name = "Game of Thrones"
+season = 6
+episodes = 4
+uploader = "ettv"
 
-for i in range(0,episodes):
-    episode = searchEpisode(name,uploader,season,i+1)
-    matchedEpisodes.append(episode)
-    if(str(matchedEpisodes[i]['link']) != 'Not Found'):
-        sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
+# for i in range(0,episodes):
+#     episode = searchEpisode(name,uploader,season,i+1)
+#     matchedEpisodes.append(episode)
+#     if(str(matchedEpisodes[i]['link']) != 'Not Found'):
+#         sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
+
+checkEpisode(name,season,episodes,uploader,2)
