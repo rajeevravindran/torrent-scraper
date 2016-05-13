@@ -150,18 +150,10 @@ def checkEpisode(name,season,episode,uploader,frequency):
                 sendJSONtoDeluge(str(episodeInfo['link']),str(episodeInfo['name']),"192.168.0.104","8112","9324651015")
                 break;
 
-matchedEpisodes=[]
-
-#print searchEpisode("Modern Family","ettv",7,1)
-name = "Game of Thrones"
-season = 6
-episodes = 4
-uploader = "ettv"
-
-# for i in range(0,episodes):
-#     episode = searchEpisode(name,uploader,season,i+1)
-#     matchedEpisodes.append(episode)
-#     if(str(matchedEpisodes[i]['link']) != 'Not Found'):
-#         sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
-
-checkEpisode(name,season,episodes,uploader,2)
+def downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader):
+    matchedEpisodes=[]
+    for i in range(lowerLimit-1,upperLimit):
+        episode = searchEpisode(name,uploader,season,i+1)
+        matchedEpisodes.append(episode)
+        if(str(matchedEpisodes[i]['link']) != 'Not Found'):
+            sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
