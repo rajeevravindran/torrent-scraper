@@ -1,11 +1,11 @@
 from torrentScraper import checkEpisode, downloadEpisodeSeries
 
 name = "Suits"
-season = 5
+season = 4
 episodes = 4
-uploader = "ettv"
+uploader = ""
 lowerLimit = 1
-upperLimit = 15
+upperLimit = 16
 
 #checkEpisode(name,season,episodes,uploader,2)
 downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)

@@ -5,7 +5,11 @@ from time import strftime, localtime, gmtime
 
 def sendHttpRequest(url):
     print "[] Sending HTTPS request to "+str(url)
-    page = requests.get(url)
+    try:
+        page = requests.get(url)
+    except requests.exceptions.RequestException, Arguement:
+        updateLog(" Error "+str(Arguement))
+        sendHttpRequest(url)
     content = html.fromstring(page.content)
     print "[] Received content"
     return content
@@ -112,8 +116,8 @@ def searchEpisode(showName,uploader,season,episode):
         if(searchResult!=None):
             gotEpisode = True
             updateLog("Found "+searchResult['name'])
-        if(page == 3):
-            updateLog(" Not found within "+str(page)+" pages")
+        if(page == 5):
+            updateLog(showDetails['name']+" "+generateEpisodeNumber(showDetails['season'],showDetails['episode'])+" not found within "+str(page)+" pages")
             return {
                 'name' : 'Not Found',
                 'link' : 'Not Found',
@@ -155,5 +159,6 @@ def downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader):
     for i in range(lowerLimit-1,upperLimit):
         episode = searchEpisode(name,uploader,season,i+1)
         matchedEpisodes.append(episode)
+    for i in range(lowerLimit-1,upperLimit):
         if(str(matchedEpisodes[i]['link']) != 'Not Found'):
             sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
