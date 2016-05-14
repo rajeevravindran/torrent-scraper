@@ -1,11 +1,15 @@
-from torrentScraper import checkEpisode, downloadEpisodeSeries
+from torrentScraper import checkEpisode, downloadEpisodeSeries,sendJSONtoDeluge,scrape
 
-name = "Suits"
-season = 4
-episodes = 4
+
+
+name = "Person of Interest"
+season = 5
+episodes = 14
 uploader = ""
 lowerLimit = 1
-upperLimit = 16
+upperLimit = 13
 
 #checkEpisode(name,season,episodes,uploader,2)
-downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)
+#downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)
+request = scrape("Person of Interest","","Season 1")
+sendJSONtoDeluge(request['link'],request['name'],"192.168.0.104","8112","9324651015")

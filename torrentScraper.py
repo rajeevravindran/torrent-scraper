@@ -2,6 +2,20 @@ import requests
 from lxml import html
 import re
 from time import strftime, localtime, gmtime
+import sqlite3
+
+serverDetails = {
+    'ip' : '192.168.0.104',
+    'port' : '8112',
+    'password' : '9324651015'
+}
+
+
+def configureScraper():
+    serverDetails['ip']=input("Enter IP Address")
+    serverDetails['port']=input("Enter IP Port")
+    serverDetails['password']=input("Enter password")
+
 
 def sendHttpRequest(url):
     print "[] Sending HTTPS request to "+str(url)
@@ -37,10 +51,10 @@ def searchContent(showDetails,webSiteData):
         episodeMatch = False
         i = 0
         searchLimit = 30
-        search_string=generateEpisodeNumber(showDetails['season'],showDetails['episode'])
+        search_string=showDetails['secondary']
         torrent_name = parseByXpath(webSiteData,'//*[@id="searchResult"]/tr/td/div/a/text()')
         while(episodeMatch == False):
-            if(i > 29):
+            if(i > 29 or len(torrent_name) == 0):
                 break;
             match = re.search(str(search_string),torrent_name[i])
             match2= re.search(str(showDetails['uploader']),torrent_name[i])
@@ -95,12 +109,12 @@ def searchContent(showDetails,webSiteData):
   ##  //*[@id="searchResult"]/tbody/tr[7]/td[2]/div/a
     ## //*[@id="searchResult"]/tbody/tr[22]/td[2]/font/i
 
-def searchEpisode(showName,uploader,season,episode):
+def scrape(Name,uploader,secondary):
     gotEpisode = False
     page = 0
     while(gotEpisode == False):
         print "Generating Request url for page "+str(page)
-        name=showName.split()
+        name=Name.split()
         url = 'https://pirateproxy.pe/search/'
         for i in range(0,len(name)):
             if(i!=(len(name)-1)):
@@ -111,13 +125,17 @@ def searchEpisode(showName,uploader,season,episode):
         print url
         websiteData = sendHttpRequest(url)
         page = page + 1
-        showDetails = {'name':showName,'season':season,'episode':episode,'uploader':uploader}
+        showDetails = {'name':Name,
+                       'secondary':secondary,
+                       'uploader':uploader
+        }
         searchResult = searchContent(showDetails,websiteData)
         if(searchResult!=None):
             gotEpisode = True
-            updateLog("Found "+searchResult['name'])
+            #updateLog(str(searchResult))
+            updateLog("Found "+searchResult['name']+" Seeds "+str(searchResult['seeds'])+" Leech "+str(searchResult['leech'])+" Uploader "+str(searchResult['uploader']))
         if(page == 5):
-            updateLog(showDetails['name']+" "+generateEpisodeNumber(showDetails['season'],showDetails['episode'])+" not found within "+str(page)+" pages")
+            updateLog(showDetails['name']+" "+showDetails['secondary']+" not found within "+str(page)+" pages")
             return {
                 'name' : 'Not Found',
                 'link' : 'Not Found',
@@ -149,16 +167,16 @@ def checkEpisode(name,season,episode,uploader,frequency):
             firstTime = False
             previousTime = time
             updateLog("Checking for "+str(name)+" "+generateEpisodeNumber(season,episode))
-            episodeInfo = searchEpisode(name,uploader,season,episode)
+            episodeInfo = scrape(name,uploader,generateEpisodeNumber(season,episode))
             if(episodeInfo['link']!='Not Found'):
-                sendJSONtoDeluge(str(episodeInfo['link']),str(episodeInfo['name']),"192.168.0.104","8112","9324651015")
+                sendJSONtoDeluge(str(episodeInfo['link']),str(episodeInfo['name']),serverDetails['ip'],serverDetails['port'],serverDetails['password'])
                 break;
 
 def downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader):
     matchedEpisodes=[]
     for i in range(lowerLimit-1,upperLimit):
-        episode = searchEpisode(name,uploader,season,i+1)
+        episode = scrape(name,uploader,generateEpisodeNumber(season,i+1))
         matchedEpisodes.append(episode)
-    for i in range(lowerLimit-1,upperLimit):
+    for i in range(0,len(matchedEpisodes)):
         if(str(matchedEpisodes[i]['link']) != 'Not Found'):
-            sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),"192.168.0.104","8112","9324651015")
+            sendJSONtoDeluge(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),serverDetails['ip'],serverDetails['port'],serverDetails['password'])
