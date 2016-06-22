@@ -157,6 +157,9 @@ def sendJSONtoDeluge(link,name,serverAddress,port,password):
     response = deluge.post(postRequest,data=JSONString)
     updateLog("Downloading "+name+" "+str(response.headers))
 
+def sendJSONtoVuze():
+    print "This is Maanav's commit"
+
 def checkEpisode(name,season,episode,uploader,frequency):
     firstTime = True
     previousTime = 1
