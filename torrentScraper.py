@@ -159,6 +159,7 @@ def sendJSONtoDeluge(link,name,serverAddress,port,password):
 
 def sendJSONtoVuze():
     print "This is Maanav's commit"
+    print "Qwerty"
 
 def checkEpisode(name,season,episode,uploader,frequency):
     firstTime = True
