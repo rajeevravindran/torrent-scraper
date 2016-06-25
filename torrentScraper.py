@@ -10,7 +10,6 @@ serverDetails = {
     'password' : '9324651015'
 }
 
-
 def configureScraper():
     serverDetails['ip']=input("Enter IP Address")
     serverDetails['port']=input("Enter IP Port")
@@ -134,7 +133,7 @@ def scrape(Name,uploader,secondary):
             gotEpisode = True
             #updateLog(str(searchResult))
             updateLog("Found "+searchResult['name']+" Seeds "+str(searchResult['seeds'])+" Leech "+str(searchResult['leech'])+" Uploader "+str(searchResult['uploader']))
-        if(page == 5):
+        if(page == 2):
             updateLog(showDetails['name']+" "+showDetails['secondary']+" not found within "+str(page)+" pages")
             return {
                 'name' : 'Not Found',
@@ -160,6 +159,7 @@ def sendJSONtoDeluge(link,name,serverAddress,port,password):
 def sendJSONtoVuze():
     print "This is Maanav's commit"
     print "Qwerty"
+    print "This is Rajeev's commit"
 
 def checkEpisode(name,season,episode,uploader,frequency):
     firstTime = True
