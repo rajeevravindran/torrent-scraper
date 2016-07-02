@@ -62,7 +62,7 @@ class MainScraper:
                     uploaderMatch = True
                 else:
                     uploaderMatch = False
-                print '['+str(i)+'] Searching '+str(search_string)+' by '+str(showDetails['uploader'])+' in '+str(torrent_name[i])
+                print '['+str(i).encode('utf-8')+'] Searching '+(search_string).encode('utf-8')+' by '+(showDetails['uploader']).encode('utf-8')+' in '+(torrent_name[i]).encode('utf-8')
                 i = i + 1
                 if ((match !=None)):
                     if (match.group(0)==search_string and uploaderMatch == True):
@@ -103,7 +103,7 @@ class MainScraper:
       ##  //*[@id="searchResult"]/tbody/tr[7]/td[2]/div/a
         ## //*[@id="searchResult"]/tbody/tr[22]/td[2]/font/i
 
-    def scrape(self,Name,uploader,secondary):
+    def scrape(self,Name,uploader,secondary,pageLimit):
         gotEpisode = False
         page = 0
         while(gotEpisode == False):
@@ -123,12 +123,12 @@ class MainScraper:
                            'secondary':secondary,
                            'uploader':uploader
             }
-            searchResult = searchContent(showDetails,websiteData)
+            searchResult = self.searchContent(showDetails,websiteData)
             if(searchResult!=None):
                 gotEpisode = True
                 #updateLog(str(searchResult))
                 updateLog("Found "+searchResult['name']+" Seeds "+str(searchResult['seeds'])+" Leech "+str(searchResult['leech'])+" Uploader "+str(searchResult['uploader']))
-            if(page == 2):
+            if(page == pageLimit):
                 updateLog(showDetails['name']+" "+showDetails['secondary']+" not found within "+str(page)+" pages")
                 return {
                     'name' : 'Not Found',
@@ -192,69 +192,6 @@ def generateEpisodeNumber(season,episode):
     generated='S'+str(season)+'E'+str(episode)
     return generated
 
-def searchContent(showDetails,webSiteData):
-    if(showDetails['uploader']!=None):
-        uploaderMatch = False
-        episodeMatch = False
-        i = 0
-        searchLimit = 30
-        search_string=showDetails['secondary']
-        torrent_name = parseByXpath(webSiteData,'//*[@id="searchResult"]/tr/td/div/a/text()')
-        while(episodeMatch == False):
-            if(i > 29 or len(torrent_name) == 0):
-                break;
-            match = re.search(str(search_string),torrent_name[i])
-            match2= re.search(str(showDetails['uploader']),torrent_name[i])
-            episodeUploaderXpath = '//*[@id="searchResult"]/tr['+str(i+1)+']/td[2]/font/a/text()'
-            episodeUploader = parseByXpath(webSiteData,episodeUploaderXpath)
-            if(len(episodeUploader)==0):
-                episodeUploader = 'Anonymous'
-            else:
-                episodeUploader = episodeUploader[0]
-            if (episodeUploader == showDetails['uploader'] or bool(showDetails['uploader']) == False):
-                uploaderMatch = True
-            else:
-                uploaderMatch = False
-            print '['+str(i)+'] Searching '+str(search_string)+' by '+str(showDetails['uploader'])+' in '+str(torrent_name[i])
-            i = i + 1
-            if ((match !=None)):
-                if (match.group(0)==search_string and uploaderMatch == True):
-                    print 'Matched search'
-                    print '[] Found at node '+str(i)
-                    episodeMatch=True
-                    break
-        if(episodeMatch == True):
-            print "[] Found. Parsing Details"
-            episodeNode = i
-            episodeNameXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/div/a/text()'
-            episodeName = parseByXpath(webSiteData, episodeNameXpath)[0]
-            episodeMagnetXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/a[1]/@href'
-            magnetLink = parseByXpath(webSiteData,episodeMagnetXpath)[0]
-            episodeUploaderXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/a/text()'
-            episodeUploader = parseByXpath(webSiteData,episodeUploaderXpath)[0]
-            episodeDetailsXpath =  '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/text()'
-            episodeDetails = parseByXpath(webSiteData,episodeDetailsXpath)[0]+str(episodeUploader)
-            episodeSeedsXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[3]/text()'
-            episodeSeeds = parseByXpath(webSiteData,episodeSeedsXpath)[0]
-            episodeLeechXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[4]/text()'
-            episodeLeech = parseByXpath(webSiteData,episodeLeechXpath)[0]
-            episodeUploaderXpath = '//*[@id="searchResult"]/tr['+str(episodeNode)+']/td[2]/font/a/text()'
-            episodeUploader = parseByXpath(webSiteData,episodeUploaderXpath)[0]
-            episodeDetails = {
-                'name' : episodeName,
-                'link' : magnetLink,
-                'details' : episodeDetails,
-                'seeds' : episodeSeeds,
-                'leech' : episodeLeech,
-                'uploader' : episodeUploader
-            }
-        if(episodeMatch == True):
-            return episodeDetails
-        else:
-            return None
-  ##  //*[@id="searchResult"]/tbody/tr[6]/td[2]/font/text()
-  ##  //*[@id="searchResult"]/tbody/tr[7]/td[2]/div/a
-    ## //*[@id="searchResult"]/tbody/tr[22]/td[2]/font/i
 
 
 def sendJSONtoVuze():

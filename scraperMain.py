@@ -13,14 +13,14 @@ freqMinutes = 2
 
 newDeluge = mainLib.Deluge("deluge","192.168.0.100","8081","pi","9324651015")
 newDeluge.displayDetails()
-newDeluge.configure("HomePi","192.168.0.104","8080","pi","9324651015")
+newDeluge.configure("HomePi","192.168.0.104","8112","pi","9324651015")
 newDeluge.displayDetails()
 
 Scraper = mainLib.MainScraper()
-Scraper.configureScraper("HomePi","192.168.0.104","8080","deluge","9324651015")
+Scraper.configureScraper("HomePi","192.168.0.104","8112","pi","9324651015")
 Scraper.downloader.displayDetails()
-scrapedInfo = Scraper.scrape("House of Cards","","S03E10")
-
+scrapedInfo = Scraper.scrape("House of Cards","","S02E03",2)
+print scrapedInfo
 newDeluge.sendMagnetLink(scrapedInfo['link'],scrapedInfo['name'])
 #heckEpisode(name,season,episodes,uploader,freqMinutes)
 #downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)
