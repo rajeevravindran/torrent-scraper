@@ -2,7 +2,6 @@ import requests
 from lxml import html
 import re
 from time import strftime, localtime, gmtime
-import sqlite3
 
 class torrentClient:
     def __init__(self,name="deluge",ip="192.168.0.100",port="8080",username = "deluge",password = "deluge"):

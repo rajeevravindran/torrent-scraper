@@ -20,7 +20,7 @@ Scraper = mainLib.MainScraper()
 Scraper.configureScraper("HomePi","192.168.0.104","8112","pi","9324651015")
 Scraper.downloader.displayDetails()
 scrapedInfo = Scraper.scrape("House of Cards","","S02E03",2)
-print scrapedInfo
+
 newDeluge.sendMagnetLink(scrapedInfo['link'],scrapedInfo['name'])
 #heckEpisode(name,season,episodes,uploader,freqMinutes)
 #downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)
