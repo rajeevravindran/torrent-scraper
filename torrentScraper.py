@@ -4,7 +4,8 @@ import re
 from time import strftime, localtime, gmtime
 
 class torrentClient:
-    def __init__(self,name="deluge",ip="192.168.0.100",port="8080",username = "deluge",password = "deluge"):
+    def __init__(self,type="deluge",name="deluge",ip="192.168.0.100",port="8080",username = "deluge",password = "deluge"):
+        self.type = type
         self.name = name
         self.ip = ip
         self.port = port
@@ -13,7 +14,8 @@ class torrentClient:
     def displayDetails(self):
         #print self.name,self.ip,self.username,self.password
         print self.name+" server at "+self.ip+":"+self.port+" user ->"+self.username+" pass->"+self.password
-    def configure(self,name,ip,port,username,password):
+    def configure(self,type,name,ip,port,username,password):
+        self.type = type
         self.name = name
         self.ip = ip
         self.port = port
@@ -21,6 +23,16 @@ class torrentClient:
         self.password = password
 
 class Deluge(torrentClient):
+    def testClient(self):
+        deluge = requests.session()
+        JSONString ='{"method": "auth.login", "params": ["'+str(self.password)+'"], "id": 1}'
+        postRequest = "http://"+self.ip+":"+self.port+"/json"
+        response = deluge.post(postRequest,data=JSONString)
+        if response.ok:
+            print "Test Successful"
+        else:
+            print "Unable to connect. Check IP,PORT or PASSWORD"
+
     def sendMagnetLink(self,link,name):
         link="\""+str(link)+"\""
         deluge = requests.session()
@@ -32,12 +44,46 @@ class Deluge(torrentClient):
         response = deluge.post(postRequest,data=JSONString)
         updateLog("Downloading "+name+" "+str(response.headers))
 
+class uTorrent(torrentClient):
+    def testClient(self):
+        utorrent = requests.session()
+        postString = "http://"+self.ip+":"+self.port+"/gui/token.html"
+        request = utorrent.get(postString,auth=(self.username, self.password))
+        httpReturnCode = request.status_code
+        if httpReturnCode == 401:
+            print "uTorrent Authentication Failed. Check username and password"
+        else:
+            extractedHTML = html.fromstring(request.content)
+            self.extractedToken = extractedHTML.xpath('//div/text()')[0]
+            print "Successful. Retrieved Token -->"+self.extractedToken
+    def sendMagnetLink(self,link,name):
+        utorrent = requests.session()
+        postString = "http://"+self.ip+":"+self.port+"/gui/token.html"
+        print postString
+        request = utorrent.get(postString,auth=(self.username, self.password))
+        httpReturnCode = request.status_code
+        if httpReturnCode == 401:
+            print "uTorrent Authentication Failed. Check username and password"
+        else:
+            extractedHTML = html.fromstring(request.content)
+            extractedToken = extractedHTML.xpath('//div/text()')[0]
+            print "Successful. Retrieved Token -->"+extractedToken
+        link = requests.utils.quote(link,safe='')
+        postString = "http://"+self.ip+":"+self.port+"/gui/?token="+str(extractedToken)+"&action=add-url&s="+link
+        print postString
+        response = utorrent.get(postString,auth=(self.username, self.password))
+        print response
+        updateLog("Downloading "+name+" "+str(response.headers))
+
 class MainScraper:
     def __init__(self):
-        self.downloader = Deluge()
-    def configureScraper(self,name,ip,port,username,password):
-        self.downloader.configure(name,ip,port,username,password)
-
+        self.downloader = torrentClient()
+    def configureScraper(self,downloader):
+        self.downloader.configure(downloader.type,downloader.name,downloader.ip,downloader.port,downloader.username,downloader.password)
+        if downloader.type == "deluge":
+            self.downloader = Deluge(downloader.type,downloader.name,downloader.ip,downloader.port,downloader.username,downloader.password)
+        if downloader.type == "utorrent":
+            self.downloader = uTorrent(downloader.type,downloader.name,downloader.ip,downloader.port,downloader.username,downloader.password)
     def searchContent(self,showDetails,webSiteData):
         if(showDetails['uploader']!=None):
             uploaderMatch = False
