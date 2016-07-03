@@ -238,11 +238,3 @@ def generateEpisodeNumber(season,episode):
     episode=format(int(episode),'02d')
     generated='S'+str(season)+'E'+str(episode)
     return generated
-
-
-
-def sendJSONtoVuze():
-    print "This is Maanav's commit"
-    print "Qwerty"
-    print "This is Rajeev's commit"
-
