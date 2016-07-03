@@ -7,7 +7,7 @@ season = 3
 episodes = 10
 uploader = "ettv"
 lowerLimit = 1
-upperLimit = 13
+upperLimit = 10
 freqMinutes = 2
 
 
@@ -25,10 +25,10 @@ Scraper = mainLib.MainScraper()
 Scraper.configureScraper(newUTorrent)
 Scraper.downloader.testClient()
 Scraper.downloader.displayDetails()
-scrapedInfo = Scraper.scrape("House of Cards","","S04E02",2)
-newUTorrent.sendMagnetLink(scrapedInfo['link'],scrapedInfo['name'])
+#scrapedInfo = Scraper.scrape("House of Cards","","S04E02",2)
+#Scraper.downloader.sendMagnetLink(scrapedInfo['link'],scrapedInfo['name'])
 #ewDeluge.sendMagnetLink(scrapedInfo['link'],scrapedInfo['name'])
 #heckEpisode(name,season,episodes,uploader,freqMinutes)
-#downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)
+Scraper.downloadEpisodeSeries(name,season,lowerLimit,upperLimit,uploader)
 #request = scrape("House of Cards","","S04E01")
 #sendJSONtoDeluge(request['link'],request['name'],"192.168.0.104","8112","9324651015")

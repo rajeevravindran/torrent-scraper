@@ -148,7 +148,7 @@ class MainScraper:
       ##  //*[@id="searchResult"]/tbody/tr[7]/td[2]/div/a
         ## //*[@id="searchResult"]/tbody/tr[22]/td[2]/font/i
 
-    def scrape(self,Name,uploader,secondary,pageLimit):
+    def scrape(self,Name,uploader,secondary,pageLimit=5):
         gotEpisode = False
         page = 0
         while(gotEpisode == False):
@@ -197,6 +197,7 @@ class MainScraper:
                 updateLog("Checking for "+str(name)+" "+generateEpisodeNumber(season,episode))
                 episodeInfo = self.scrape(name,uploader,generateEpisodeNumber(season,episode))
                 if(episodeInfo['link']!='Not Found'):
+                    print episodeInfo
                     self.downloader.sendMagnetLink(str(episodeInfo['link']),str(episodeInfo['name']),self.downloader.ip,self.downloader.port,self.downloader.password)
                     break;
 
@@ -207,7 +208,8 @@ class MainScraper:
             matchedEpisodes.append(episode)
         for i in range(0,len(matchedEpisodes)):
             if(str(matchedEpisodes[i]['link']) != 'Not Found'):
-                self.downloader.sendMagnetLink(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']),self.downloader.ip,self.downloader.port,self.downloader.password)
+                print matchedEpisodes
+                self.downloader.sendMagnetLink(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']))
 
 def sendHttpRequest(url):
     print "[] Sending HTTPS request to "+str(url)
