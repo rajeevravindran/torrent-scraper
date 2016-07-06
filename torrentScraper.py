@@ -148,19 +148,19 @@ class MainScraper:
       ##  //*[@id="searchResult"]/tbody/tr[7]/td[2]/div/a
         ## //*[@id="searchResult"]/tbody/tr[22]/td[2]/font/i
 
-    def scrape(self,Name,uploader,secondary,pageLimit=5):
+    def scrape(self,Name,uploader,secondary,pageLimit=10):
         gotEpisode = False
         page = 0
         while(gotEpisode == False):
             print "Generating Request url for page "+str(page)
             name=Name.split()
-            url = 'https://pirateproxy.pe/search/'
+            url = 'https://kuiken.co/search/'
             for i in range(0,len(name)):
                 if(i!=(len(name)-1)):
                     url = url + str(name[i]) + "%20"
                 else:
                     url = url + str(name[i])
-            url = url + "/"+str(page)+"/99/0"
+            url = url + "/"+str(page)+"/99/205"
             print url
             websiteData = sendHttpRequest(url)
             page = page + 1

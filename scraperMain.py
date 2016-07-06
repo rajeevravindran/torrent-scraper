@@ -2,12 +2,12 @@
 import torrentScraper as mainLib
 
 
-name = "Silicon Valley"
+name = "New Girl"
 season = 3
-episodes = 10
-uploader = "ettv"
-lowerLimit = 1
-upperLimit = 10
+episodes = 16
+uploader = ""
+lowerLimit = 7
+upperLimit = 23
 freqMinutes = 2
 
 
@@ -17,8 +17,8 @@ freqMinutes = 2
 #newDeluge.displayDetails()
 #newDeluge.testClient()
 
-newUTorrent = mainLib.uTorrent()
-newUTorrent.configure("utorrent","RajeevLaptop","localhost","8080","admin","qwerty")
+newUTorrent = mainLib.Deluge()
+newUTorrent.configure("deluge","HomePi","192.168.0.104","8112","pi","9324651015")
 newUTorrent.displayDetails()
 newUTorrent.testClient()
 Scraper = mainLib.MainScraper()
