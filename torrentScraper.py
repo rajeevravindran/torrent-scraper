@@ -44,6 +44,21 @@ class Deluge(torrentClient):
         response = deluge.post(postRequest,data=JSONString)
         updateLog("Downloading "+name+" "+str(response.headers))
 
+class Transmittion(torrentClient):
+    def testClient(self):
+        newSession = requests.session()
+        postString = "http://"+self.ip+":"+self.port+"/transmission/rpc"
+        test = newSession.get(postString,auth=(self.username,self.password))
+        if test.status_code == 200:
+            print "Successful"
+        elif test.status.code == 401:
+            print "Authentication Failed. Check username and password"
+        else:
+            print "Connection Failed. Check server IP and port. Is Transmission running?"
+    def sendMagnetLink(self,link,name):
+        JSONlink = "{\"method\": \"torrent-add\", \"arguments\": {\"paused\": \"false\", \"filename\": "+str(link)+"}}"
+        
+
 class uTorrent(torrentClient):
     def testClient(self):
         utorrent = requests.session()
@@ -78,8 +93,10 @@ class uTorrent(torrentClient):
 class MainScraper:
     def __init__(self):
         self.downloader = torrentClient()
-    def configureScraper(self,downloader):
+        self.scrapeSite = "piratebay.red"
+    def configureScraper(self,downloader,siteName):
         self.downloader.configure(downloader.type,downloader.name,downloader.ip,downloader.port,downloader.username,downloader.password)
+        self.scrapeSite = siteName
         if downloader.type == "deluge":
             self.downloader = Deluge(downloader.type,downloader.name,downloader.ip,downloader.port,downloader.username,downloader.password)
         if downloader.type == "utorrent":
@@ -154,7 +171,7 @@ class MainScraper:
         while(gotEpisode == False):
             print "Generating Request url for page "+str(page)
             name=Name.split()
-            url = 'https://kuiken.co/search/'
+            url = 'https://'+self.scrapeSite+'/search/'
             for i in range(0,len(name)):
                 if(i!=(len(name)-1)):
                     url = url + str(name[i]) + "%20"
@@ -210,7 +227,8 @@ class MainScraper:
             if(str(matchedEpisodes[i]['link']) != 'Not Found'):
                 print matchedEpisodes
                 self.downloader.sendMagnetLink(str(matchedEpisodes[i]['link']),str(matchedEpisodes[i]['name']))
-
+    def cmdScrape(self,url,searchString):
+        print url
 def sendHttpRequest(url):
     print "[] Sending HTTPS request to "+str(url)
     try:
